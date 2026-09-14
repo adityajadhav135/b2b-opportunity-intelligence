@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>B2B Opportunity Intelligence — Brandhero PoC</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root{
+    --paper:#F0F1EB;
+    --panel:#FAFAF6;
+    --ink:#1C1F1B;
+    --ink-soft:#5B5F56;
+    --line:#D7D8CE;
+    --accent:#2C4A6E;
+    --low:#8B8D82;
+    --mid:#B8863B;
+    --high:#3D6B4F;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    font-size:15px;
+    line-height:1.5;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:36px 28px 80px;}
+
+  header{margin-bottom:28px;}
+  header h1{
+    font-family:'Fraunces',serif;
+    font-weight:500;
+    font-size:28px;
+    margin:0 0 6px;
+    letter-spacing:-0.01em;
+  }
+  header p{
+    color:var(--ink-soft);
+    margin:0;
+    max-width:640px;
+    font-size:14px;
+  }
+  header p a{color:var(--accent);}
+
+  .company-row{
+    display:flex;
+    gap:12px;
+    margin:22px 0 20px;
+    flex-wrap:wrap;
+  }
+  .company-row input{
+    flex:1;
+    min-width:200px;
+    padding:11px 13px;
+    border:1px solid var(--line);
+    background:var(--panel);
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    color:var(--ink);
+  }
+  .company-row input:focus{outline:2px solid var(--accent); outline-offset:-1px;}
+
+  .examples{margin-bottom:28px;}
+  .examples-label{font-size:12px;color:var(--ink-soft);margin-bottom:8px;}
+  .chip{
+    display:inline-block;
+    padding:6px 12px;
+    margin:0 8px 8px 0;
+    border:1px solid var(--line);
+    background:var(--panel);
+    font-size:13px;
+    cursor:pointer;
+    color:var(--ink);
+  }
+  .chip:hover{border-color:var(--accent);color:var(--accent);}
+
+  .board{
+    display:grid;
+    grid-template-columns:1.15fr 1fr;
+    gap:0;
+    border:1px solid var(--line);
+    background:var(--panel);
+  }
+  @media (max-width:860px){ .board{grid-template-columns:1fr;} }
+
+  .signals{padding:26px 28px;border-right:1px solid var(--line);}
+  @media (max-width:860px){ .signals{border-right:none;border-bottom:1px solid var(--line);} }
+
+  .group{margin-bottom:22px;}
+  .group:last-child{margin-bottom:0;}
+  .group-title{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:var(--ink-soft);
+    margin-bottom:10px;
+    letter-spacing:0.02em;
+  }
+
+  .signal-row{
+    padding:12px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .signal-row:last-child{border-bottom:none;}
+  .signal-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    cursor:pointer;
+  }
+  .signal-name{font-size:14px;}
+  .signal-weight{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:var(--ink-soft);
+    margin-left:8px;
+  }
+  .switch{
+    position:relative;
+    width:38px;
+    height:20px;
+    background:var(--line);
+    border-radius:10px;
+    flex-shrink:0;
+    transition:background .15s;
+  }
+  .switch::after{
+    content:'';
+    position:absolute;
+    top:2px;left:2px;
+    width:16px;height:16px;
+    background:var(--panel);
+    border-radius:50%;
+    transition:transform .15s;
+  }
+  .signal-row.on .switch{background:var(--accent);}
+  .signal-row.on .switch::after{transform:translateX(18px);}
+
+  .evidence{
+    display:none;
+    margin-top:10px;
+  }
+  .signal-row.on .evidence{display:block;}
+  .evidence textarea, .evidence input{
+    width:100%;
+    font-family:'Inter',sans-serif;
+    font-size:13px;
+    padding:8px 10px;
+    border:1px solid var(--line);
+    background:#fff;
+    color:var(--ink);
+    margin-bottom:6px;
+    resize:vertical;
+  }
+  .evidence textarea{min-height:44px;}
+  .evidence label{font-size:11px;color:var(--ink-soft);display:block;margin-bottom:3px;}
+
+  .readout{padding:26px 28px;}
+  .score-band{margin-bottom:22px;}
+  .score-num{
+    font-family:'Fraunces',serif;
+    font-size:64px;
+    line-height:1;
+    font-weight:500;
+  }
+  .score-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    margin-top:6px;
+    padding:3px 9px;
+    display:inline-block;
+  }
+  .band-low{color:var(--low);}
+  .band-mid{color:var(--mid);}
+  .band-high{color:var(--high);}
+  .tag-low{background:rgba(139,141,130,.15); color:var(--low);}
+  .tag-mid{background:rgba(184,134,59,.15); color:var(--mid);}
+  .tag-high{background:rgba(61,107,79,.15); color:var(--high);}
+
+  .readout-block{margin-bottom:20px;}
+  .readout-title{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+  .readout-body{font-size:14px;}
+  .fired-list{list-style:none;margin:0;padding:0;}
+  .fired-list li{
+    padding:8px 0;
+    border-bottom:1px solid var(--line);
+    font-size:13px;
+  }
+  .fired-list li:last-child{border-bottom:none;}
+  .fired-list .sig{font-weight:500;}
+  .fired-list .evi{color:var(--ink-soft);display:block;margin-top:2px;}
+
+  .empty-note{
+    color:var(--ink-soft);
+    font-size:13px;
+    font-style:italic;
+  }
+
+  footer{
+    margin-top:26px;
+    font-size:12px;
+    color:var(--ink-soft);
+  }
+  footer a{color:var(--accent);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>B2B Opportunity Intelligence</h1>
+    <p>A proof-of-concept lead-scoring tool built for Brandhero. Toggle a signal on when you have real evidence for it, add the evidence and source, and the score, likely need, stakeholder, and outreach angle update automatically. See the <a href="README.md">README</a> for the full reasoning.</p>
+  </header>
+
+  <div class="company-row">
+    <input id="companyName" placeholder="Company name" />
+    <input id="companyDomain" placeholder="Domain (e.g. example.com)" />
+  </div>
+
+  <div class="examples">
+    <div class="examples-label">Load a researched example:</div>
+    <span class="chip" data-example="monk">Monk — score 32</span>
+    <span class="chip" data-example="atomicwork">Atomicwork — score 22</span>
+    <span class="chip" data-example="teamviewer">TeamViewer — score 10</span>
+    <span class="chip" data-example="yoona">yoona.ai — score 5</span>
+    <span class="chip" data-example="protexxa">Protexxa — score 0</span>
+    <span class="chip" data-example="clear">Clear</span>
+  </div>
+
+  <div class="board">
+    <div class="signals" id="signals"></div>
+    <div class="readout" id="readout"></div>
+  </div>
+
+  <footer>
+    Scoring logic mirrors <code>scorer.py</code> in this repo exactly — same weights, same mapping, same refusal to invent an angle when no evidence is given.
+  </footer>
+
+</div>
+
+<script>
+const WEIGHTS = {
+  recent_funding: 22,
+  design_hiring_gap: 12,
+  sales_gtm_hiring: 14,
+  weak_website: 20,
+  repositioning_mismatch: 12,
+  leadership_change: 10,
+  us_enterprise_expansion: 10,
+  bootstrapped_low_urgency: -15,
+};
+
+const GROUPS = [
+  { title: "Funding & expansion", keys: ["recent_funding", "us_enterprise_expansion"] },
+  { title: "Hiring", keys: ["design_hiring_gap", "sales_gtm_hiring"] },
+  { title: "Product & positioning", keys: ["weak_website", "repositioning_mismatch"] },
+  { title: "Leadership & urgency", keys: ["leadership_change", "bootstrapped_low_urgency"] },
+];
+
+const LABELS = {
+  recent_funding: "Funding raised in the last 0–6 months",
+  design_hiring_gap: "Hiring design/product, no senior design leader",
+  sales_gtm_hiring: "Actively hiring Sales/AE/GTM roles",
+  weak_website: "Weak/generic website messaging",
+  repositioning_mismatch: "Repositioning not reflected visually",
+  leadership_change: "New CMO/Head of Growth in last ~90 days",
+  us_enterprise_expansion: "Expanding into US/enterprise market",
+  bootstrapped_low_urgency: "Bootstrapped, flat headcount, no trigger",
+};
+
+const NEED_MAP = {
+  recent_funding: "Investor-grade site & brand credibility for next round / new hires",
+  design_hiring_gap: "Outsourced design capacity to cover the gap in-house hiring hasn't filled",
+  sales_gtm_hiring: "Conversion-focused website/collateral to support a growing sales team",
+  weak_website: "Full website UX/conversion redesign",
+  repositioning_mismatch: "Brand & visual identity refresh to match new positioning",
+  leadership_change: "Fast, visible brand/website win for a new marketing leader's first 90 days",
+  us_enterprise_expansion: "Enterprise-credible design system & website for a new market",
+};
+
+const STAKEHOLDER_MAP = {
+  recent_funding: "Founder/CEO or Head of Marketing",
+  design_hiring_gap: "Head of Product or CEO",
+  sales_gtm_hiring: "Head of Sales/RevOps or CMO",
+  weak_website: "Head of Marketing / Growth",
+  repositioning_mismatch: "CMO or Founder",
+  leadership_change: "The new leader themselves — direct outreach",
+  us_enterprise_expansion: "Head of US GTM / Regional VP",
+};
+
+const TEMPLATES = {
+  recent_funding: (e) => `Congratulate on the raise (${e}) and frame the site/brand as the next credibility unlock for the upcoming hiring/enterprise push.`,
+  design_hiring_gap: (e) => `Reference the open design/product role (${e}) and offer to cover the gap on a project basis while they hire.`,
+  sales_gtm_hiring: (e) => `Reference the sales hiring push (${e}) and frame the website as the thing new AEs will lean on hardest in the first call.`,
+  weak_website: (e) => `Point to a specific, concrete UX/messaging gap on the live site (${e}) as a quick-win opportunity.`,
+  repositioning_mismatch: (e) => `Note the new positioning (${e}) and flag that the current site/brand doesn't yet reflect it.`,
+  leadership_change: (e) => `Reach out directly to the new leader (${e}) — early tenure is when brand/website budget gets unlocked.`,
+  us_enterprise_expansion: (e) => `Frame the US/enterprise push (${e}) as needing an enterprise-credible design bar.`,
+};
+
+const EXAMPLES = {
+  monk: {
+    name: "Monk", domain: "meetmonk.ai",
+    signals: {
+      recent_funding: { on: true, evidence: "$25M Series A, Apr 21 2026 (~5 months old) — total raised $29M", source: "https://axios.com/pro/fintech-deals/2026/04/21/monk-25-million-startups-ai-accounts-receivable" },
+      us_enterprise_expansion: { on: true, evidence: "Landing AI-native customers (ElevenLabs, Profound) + enterprise ERP integrations (Salesforce, Rillet), Jun–Jul 2026", source: "https://simplify.jobs/c/Monk" },
+    }
+  },
+  atomicwork: {
+    name: "Atomicwork", domain: "atomicwork.com",
+    signals: {
+      design_hiring_gap: { on: true, evidence: "27 open roles incl. 2 Design + 2 Marketing & Growth, hiring ICs not a design exec", source: "https://www.trueup.io/co/atomicwork" },
+      us_enterprise_expansion: { on: true, evidence: "India-founded, now SF HQ, ongoing US GTM build-out", source: "https://inc42.com/company/atomicwork/funding/" },
+    }
+  },
+  teamviewer: {
+    name: "TeamViewer", domain: "teamviewer.com",
+    signals: {
+      leadership_change: { on: true, evidence: "New CMO Peter Ruchatz announced May 28 2026, effective Sep 2026", source: "https://www.teamviewer.com/ru-cis/global/company/press/2026/teamviewer-appoints-peter-ruchatz-as-chief-marketing-officer/" },
+    }
+  },
+  yoona: {
+    name: "yoona.ai", domain: "yoona.ai",
+    signals: {
+      weak_website: { on: true, evidence: "Generic hype language, no specific ICP; last major push (yoona 3.0) was Oct 2024", source: "https://websummit.com/wp-media/2024/10/yoona.ai-Press-Release-1.pdf" },
+      bootstrapped_low_urgency: { on: true, evidence: "", source: "" },
+    }
+  },
+  protexxa: {
+    name: "Protexxa", domain: "protexxa.com",
+    signals: {
+      bootstrapped_low_urgency: { on: true, evidence: "", source: "" },
+    }
+  },
+};
+
+let state = {};
+Object.keys(WEIGHTS).forEach(k => state[k] = { on: false, evidence: "", source: "" });
+
+function renderSignals(){
+  const el = document.getElementById("signals");
+  el.innerHTML = "";
+  GROUPS.forEach(group => {
+    const g = document.createElement("div");
+    g.className = "group";
+    const gt = document.createElement("div");
+    gt.className = "group-title";
+    gt.textContent = group.title;
+    g.appendChild(gt);
+
+    group.keys.forEach(key => {
+      const row = document.createElement("div");
+      row.className = "signal-row" + (state[key].on ? " on" : "");
+      row.innerHTML = `
+        <div class="signal-head" data-key="${key}">
+          <span class="signal-name">${LABELS[key]}<span class="signal-weight">${WEIGHTS[key] > 0 ? "+" : ""}${WEIGHTS[key]}</span></span>
+          <div class="switch"></div>
+        </div>
+        <div class="evidence">
+          <label>Evidence</label>
+          <textarea data-field="evidence" data-key="${key}" placeholder="What did you find, specifically?">${state[key].evidence}</textarea>
+          <label>Source URL</label>
+          <input data-field="source" data-key="${key}" placeholder="https://..." value="${state[key].source}">
+        </div>
+      `;
+      g.appendChild(row);
+    });
+    el.appendChild(g);
+  });
+
+  el.querySelectorAll(".signal-head").forEach(h => {
+    h.addEventListener("click", () => {
+      const key = h.dataset.key;
+      state[key].on = !state[key].on;
+      renderSignals();
+      renderReadout();
+    });
+  });
+  el.querySelectorAll("[data-field]").forEach(inp => {
+    inp.addEventListener("input", () => {
+      state[inp.dataset.key][inp.dataset.field] = inp.value;
+      renderReadout();
+    });
+  });
+}
+
+function renderReadout(){
+  const el = document.getElementById("readout");
+  let total = 0;
+  const fired = [];
+  Object.keys(WEIGHTS).forEach(k => {
+    if(state[k].on){
+      total += WEIGHTS[k];
+      fired.push(k);
+    }
+  });
+  const score = Math.max(0, Math.min(100, total));
+
+  let band = "low", bandLabel = "Low priority";
+  if(score >= 65){ band = "high"; bandLabel = "High priority"; }
+  else if(score >= 35){ band = "mid"; bandLabel = "Worth a look"; }
+
+  const needKeys = fired.filter(k => NEED_MAP[k]);
+  const topNeedKey = needKeys.length ? needKeys.reduce((a,b) => WEIGHTS[a] > WEIGHTS[b] ? a : b) : null;
+  const likelyNeed = topNeedKey ? NEED_MAP[topNeedKey] : "Unclear — insufficient signal";
+
+  const stakeKeys = fired.filter(k => STAKEHOLDER_MAP[k]);
+  const topStakeKey = stakeKeys.length ? stakeKeys.reduce((a,b) => WEIGHTS[a] > WEIGHTS[b] ? a : b) : null;
+  const stakeholder = topStakeKey ? STAKEHOLDER_MAP[topStakeKey] : "Founder/CEO (default for small teams)";
+
+  let outreach = "Insufficient signal for a personalized angle — needs manual research.";
+  if(topNeedKey && TEMPLATES[topNeedKey]){
+    outreach = TEMPLATES[topNeedKey](state[topNeedKey].evidence || "no evidence noted");
+  }
+
+  const firedListHtml = fired.length
+    ? `<ul class="fired-list">${fired.map(k => `
+        <li><span class="sig">${LABELS[k]}</span>${state[k].evidence ? `<span class="evi">${state[k].evidence}${state[k].source ? ` — <a href="${state[k].source}" target="_blank">source</a>` : ""}</span>` : ""}</li>
+      `).join("")}</ul>`
+    : `<p class="empty-note">No signals toggled on yet.</p>`;
+
+  el.innerHTML = `
+    <div class="score-band">
+      <div class="score-num band-${band}">${score}</div>
+      <span class="score-label tag-${band}">${bandLabel}</span>
+    </div>
+    <div class="readout-block">
+      <div class="readout-title">Signals fired</div>
+      ${firedListHtml}
+    </div>
+    <div class="readout-block">
+      <div class="readout-title">Likely need</div>
+      <div class="readout-body">${likelyNeed}</div>
+    </div>
+    <div class="readout-block">
+      <div class="readout-title">Relevant stakeholder</div>
+      <div class="readout-body">${stakeholder}</div>
+    </div>
+    <div class="readout-block">
+      <div class="readout-title">Outreach angle</div>
+      <div class="readout-body">${outreach}</div>
+    </div>
+  `;
+}
+
+document.querySelectorAll(".chip").forEach(chip => {
+  chip.addEventListener("click", () => {
+    const ex = chip.dataset.example;
+    if(ex === "clear"){
+      Object.keys(WEIGHTS).forEach(k => state[k] = { on: false, evidence: "", source: "" });
+      document.getElementById("companyName").value = "";
+      document.getElementById("companyDomain").value = "";
+    } else {
+      const data = EXAMPLES[ex];
+      Object.keys(WEIGHTS).forEach(k => state[k] = { on: false, evidence: "", source: "" });
+      Object.keys(data.signals).forEach(k => {
+        state[k] = { on: true, evidence: data.signals[k].evidence, source: data.signals[k].source };
+      });
+      document.getElementById("companyName").value = data.name;
+      document.getElementById("companyDomain").value = data.domain;
+    }
+    renderSignals();
+    renderReadout();
+  });
+});
+
+renderSignals();
+renderReadout();
+</script>
+</body>
+</html>
